@@ -1,0 +1,25 @@
+#define PIN_LED 7
+
+void setup() {
+  pinMode(7, OUTPUT);
+  Serial.begin(115200); // Initialize serial port
+  Serial.println("Hello World!");
+  digitalWrite(7, 1);
+}
+  
+void loop() {
+  digitalWrite(7, 0);
+  delay(1000);
+  
+  for ( int x = 0 ; x < 5 ; x++ ) {
+     digitalWrite(7, 1);
+     delay(100);
+     digitalWrite(7, 0); // turn off LED 
+     delay(100);
+  }
+  digitalWrite(7, 0);
+  
+  while (true) {
+      digitalWrite(7, 1);
+  }
+}
