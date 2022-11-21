@@ -1,0 +1,75 @@
+from discord.ext import commands 
+import discord
+import requests
+import json
+
+intents = discord.Intents.default()
+intents.message_content = True
+bot = commands.Bot(command_prefix='/', intents=intents)
+
+# method
+method = ["exact", "start"]
+
+
+# api 스켈레톤
+apiForm = 'https://stdict.korean.go.kr/api/search.do?key=[국어국어원openAPIkey]&q={0}&req_type=json&advanced=y&method={1}&letter_s=2'
+
+
+
+TOKEN='[디스코드 토큰]'
+
+bot.preWord =""
+
+# 노테이션
+@bot.command()
+# ctx 뒤에 매개변수를 두면 사용자가 입력한 스트링을 받을 수 있다.
+async def man(ctx):
+    out = "/game \"단어\" 하면 게임이 실행 됩니다."
+    await ctx.send(out)
+
+
+
+
+@bot.command()
+async def game(ctx, message):
+    out = ""
+
+    # 사용자 입력 이 맞는 지 처리
+    url = apiForm.format(message ,method[0])
+    res = requests.get(url)
+
+
+    # 유저 패배 분기
+    if res.text == "{}":
+        await ctx.send("패배") # <- 패배 메시지
+        return
+    # 정답
+    if  not (len(bot.preWord) == 0) and bot.preWord[-1] == message[0]:
+        bot.preWord = message
+    # 게임 시작
+    elif len(bot.preWord) == 0:
+        bot.preWord = message
+    
+    # 끝글자를 포함해서 검색하도록 포맷팅
+    url = apiForm.format(message[-1], method[1]) # <- 넣어야 할 거
+    res = requests.get(url)
+
+    # 봇 패배 분기
+    if res.text == "{}":
+        await ctx.send("승리!") # 채우실 부분
+        bot.preWord = ""
+        return
+    
+    # 데이터 빼오는 방식
+    data = json.loads(res.text)
+    for item in data["channel"]["item"]:
+        print(item["word"])
+        if len(item["word"]) > 1:
+            bot.preWord = item["word"]
+            break
+
+    # 사용자게에 출력
+    await ctx.send(bot.preWord)
+
+    
+bot.run(TOKEN)
